@@ -3,7 +3,7 @@ from django.urls import reverse
 
 class Category(models.Model):
     name = models.CharField(verbose_name='Name', max_length=200, primary_key=True)
-    url = models.URLField(verbose_name='URL', unique=True, blank=False)
+    url = models.URLField(verbose_name='URL', blank=False)
     created_time = models.DateTimeField('Created Time', auto_now_add=True)
     updated_time = models.DateTimeField('Updated Time', auto_now=True)
 
@@ -28,7 +28,7 @@ class Product(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse('products:product_detail', kwargs={'product': self.name})
+        return reverse('products:product_detail', kwargs={'product': self.name.replace('/', '')})
 
     class Meta:
         verbose_name = 'Product'

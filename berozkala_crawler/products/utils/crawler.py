@@ -14,7 +14,7 @@ def category_crawler():
     for page_element in result_set:
         s = BeautifulSoup(str(page_element), features='html.parser')
         for a in s.find_all('a', href=True):
-            categories.append(Category(a.text.strip(), base_url + a['href']))
+            categories.append(Category(name=a.text.strip(), url=(base_url + a['href'])))
 
     del categories[0]
     return categories
