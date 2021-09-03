@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import re
 
-from crawler.models import Category, Product
+from products.models import Category, Product
 
 
 def category_crawler():

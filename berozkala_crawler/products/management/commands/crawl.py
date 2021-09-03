@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand, CommandError
 
-from crawler.utils.crawler import product_crawler, category_crawler
+from products.utils.crawler import product_crawler, category_crawler
 
 
 class Command(BaseCommand):
