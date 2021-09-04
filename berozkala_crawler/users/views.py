@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.views import generic
 from .models import Profile
 
+def homepage(request):
+    return render(request=request, template_name='users/home.html')
+
 class ProfileListView(generic.ListView):
     template_name = 'users/profile_list.html'
     queryset = Profile.objects.all()
