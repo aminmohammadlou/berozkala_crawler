@@ -14,7 +14,7 @@ class Profile(models.Model):
     phone_number = models.PositiveBigIntegerField(_('phone number'), unique=True, validators=[phone_number_validator])
     email = models.EmailField(_('email'), blank=True, unique=True)
     bio = models.TextField(_('bio'), blank=True)
-    avatar = models.ImageField(_('avatar'), upload_to='avatars', blank=True, null=True)
+    avatar = models.ImageField(_('avatar'), upload_to='avatars', blank=True)
 
     class Meta:
         db_table = 'profile'
@@ -23,3 +23,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return f'id: {self.user.id} username: {self.user.username}'
+
+    def get_absolute_url(self):
+        return reverse('users:profile_detail', kwargs={'pk': self.pk})

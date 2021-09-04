@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    {{ profile.user }} - {{ profile.age }} - {{ profile.phone_number }} - {{ profile.email }}
+    <br>
+    {% if profile.avatar %}
+    <img src="{{ profile.avatar.url }}" alt="My image">
+    {% else %}
+    <p>no avatar</p>
+{% endif %}
+</body>
+
+</html>
