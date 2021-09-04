@@ -7,4 +7,5 @@ urlpatterns = [
     path('profile-list/', views.ProfileListView.as_view(), name='profile_list'),
     path('profile-list/<int:pk>', views.ProfileDetailView.as_view(), name='profile_detail'),
     path('register', views.register_request, name='register'),
+    path('login', views.login_request, name='login'),
 ]
