@@ -1,21 +1,22 @@
-from django.shortcuts import render
+from rest_framework.response import Response
+from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 from .models import Category, Product
-from django.views import generic
+from .serializers import CategorySerializer, ProductSerializer
 
-class CategoryListView(generic.ListView):
-    template_name = 'products/category_list.html'
+class CategoryListAPIView(ListCreateAPIView):
     queryset = Category.objects.all()
-    context_object_name = 'categories'
+    serializer_class = CategorySerializer
 
-class ProductListView(generic.ListView):
-    template_name = 'products/product_list.html'
-    context_object_name = 'products'
 
-    def get_queryset(self):
-        return Product.objects.filter(category__name=self.kwargs['category'])
+class ProductListView(ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'category'
+    lookup_url_kwarg = 'category'
 
-class ProductDetailView(generic.DetailView):
-    model = Product
-    template_name = 'products/product_detail.html'
-    context_object_name = 'product'
-    pk_url_kwarg = 'product'
+    
+class ProductDetailView(RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'name'
+    lookup_url_kwarg = 'name'
