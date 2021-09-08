@@ -2,6 +2,8 @@ from django.core.management import BaseCommand, CommandError
 
 from products.utils.crawler import product_crawler, category_crawler
 
+from products.models import Category
+
 
 class Command(BaseCommand):
     help = "Crawls Berozkala.com"
@@ -11,11 +13,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         arg = options['arg']
-        categories = category_crawler()
         if arg == 'category':
+            categories = category_crawler()
             for category in categories:
                 category.save()
         elif arg == 'product':
+            categories = Category.objects.all()
             for category in categories:
                 products = product_crawler(category)
                 for product in products:
