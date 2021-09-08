@@ -19,11 +19,7 @@ class ProductListAPIView(ListCreateAPIView):
 
     
 class ProductDetailAPIView(RetrieveAPIView):
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    lookup_field = 'name'
-    lookup_url_kwarg = 'name'
-
-    def get_queryset(self):
-        queryset = Product.objects.all()
-        return queryset
-    
+    lookup_field = 'pk'
+    lookup_url_kwarg = 'pk'    
