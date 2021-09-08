@@ -8,15 +8,22 @@ class CategoryListAPIView(ListCreateAPIView):
     serializer_class = CategorySerializer
 
 
-class ProductListView(ListCreateAPIView):
-    queryset = Product.objects.all()
+class ProductListAPIView(ListCreateAPIView):
     serializer_class = ProductSerializer
     lookup_field = 'category'
     lookup_url_kwarg = 'category'
 
+    def get_queryset(self):
+        queryset = Product.objects.filter(category__name=self.kwargs['category'])
+        return queryset
+
     
-class ProductDetailView(RetrieveAPIView):
-    queryset = Product.objects.all()
+class ProductDetailAPIView(RetrieveAPIView):
     serializer_class = ProductSerializer
     lookup_field = 'name'
     lookup_url_kwarg = 'name'
+
+    def get_queryset(self):
+        queryset = Product.objects.all()
+        return queryset
+    
