@@ -18,8 +18,8 @@ class Profile(models.Model):
 
     class Meta:
         db_table = 'profile'
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+        verbose_name = _('Profile')
+        verbose_name_plural = _('Profiles')
 
     def __str__(self):
         return f'id: {self.user.id} username: {self.user.username}'
