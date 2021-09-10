@@ -1,4 +1,3 @@
-from berozkala_crawler.users.serializers import UserSerializer
 from django.shortcuts import render, redirect
 from .forms import NewUserForm
 from django.contrib.auth import login, authenticate
@@ -10,9 +9,15 @@ from .models import Profile
 from django.contrib.auth import get_user_model
 from rest_framework.generics import CreateAPIView
 
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
+from .serializers import UserSerializer
+
 #django template function-base views
-# def homepage(request):
-#     return render(request=request, template_name='users/home.html')
+def homepage(request):
+    return render(request=request, template_name='users/home.html')
 
 # def register_request(request):
 #     if request.method == 'POST':
@@ -60,10 +65,21 @@ from rest_framework.generics import CreateAPIView
 #     context_object_name = 'profile'
 
 #django rest framework API view
+# @api_view(['POST',])
+# def registration_view(request):
+#     if request.method == 'POST':
+#         serializer = RegistrationSerializer(data=request.data)
+#         data = {}
+#         if serializer.is_valid():
+#             user = serializer.save()
+#             data['response'] = 'successfully registered a new user'
+#             data['username'] = user.username
+#         else:
+#             data = serializer.errors
+#         return Response(data)
 User = get_user_model()
 
 
 class UserRegisterAPIView(CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    
