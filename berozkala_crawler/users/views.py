@@ -77,9 +77,15 @@ def homepage(request):
 #         else:
 #             data = serializer.errors
 #         return Response(data)
-User = get_user_model()
-
-
-class UserRegisterAPIView(CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+@api_view(['POST',])
+def registeration_view(request):
+    if request.method == 'POST':
+        serializer = UserSerializer(data=request.data)
+        data = {}
+        if serializer.is_valid():
+            user = serializer.save()
+            data['response'] = 'successfully registered'
+            data['username'] = user.username
+        else:
+            data = serializer.errors
+        return Response(data)
