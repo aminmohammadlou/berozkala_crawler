@@ -1,91 +1,64 @@
-from django.shortcuts import render, redirect
-from .forms import NewUserForm
-from django.contrib.auth import login, authenticate
-from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm
-from django.views import generic
-from .models import Profile
+from django.shortcuts import render
 
-from django.contrib.auth import get_user_model
-from rest_framework.generics import CreateAPIView
-
-from rest_framework import status
+from django.contrib.auth import get_user_model, logout
+from django.core.exceptions import ImproperlyConfigured
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 
-from .serializers import UserSerializer
+from . import serializers
+from .utils import get_and_authenticate_user, create_user_account
 
-#django template function-base views
+
 def homepage(request):
     return render(request=request, template_name='users/home.html')
 
-# def register_request(request):
-#     if request.method == 'POST':
-#         form = NewUserForm(request.POST)
-        
-#         if form.is_valid():
-#             user = form.save()
-#             login(request, user)
-#             messages.success(request, 'Registration successful')
-#             return redirect('users:homepage')
 
-#         messages.error(request, 'Unsuccessful registration')
-#     form = NewUserForm()
-#     return render(request=request, template_name='users/register.html', context={'register_form':form})
+class AuthViewSet(viewsets.GenericViewSet):
+    permission_classes = [AllowAny, ]
+    serializer_class = serializers.EmptySerializer
+    serializer_classes = {
+        'login': serializers.LoginSerializer,
+        'register': serializers.RegisterSerializer,
+        'password_change': serializers.PasswordChangeSerializer,
+    }
 
-# def login_request(request):
-#     if request.method == 'POST':
-#         form = AuthenticationForm(request, data=request.POST)
-        
-#         if form.is_valid():
-#             username = form.cleaned_data.get('username')
-#             password = form.cleaned_data.get('password')
-#             user = authenticate(username=username, password=password)
+    @action(methods=['POST', ], detail=False)
+    def login(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = get_and_authenticate_user(**serializer.validated_data)
+        data = serializers.AuthUserSerializer(user).data
+        return Response(data=data, status=status.HTTP_200_OK)
 
-#             if user is not None:
-#                 login(request, user)
-#                 messages.info(request, f'You are now logged in as {username}')
-#                 return redirect('users:homepage')
-#             else:
-#                 messages.error(request, 'Invalid username or password')
-#         else:
-#             messages.error(request, 'Invalid username or password')
+    @action(methods=['POST', ], detail=False)
+    def register(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = create_user_account(**serializer.validated_data)
+        data = serializers.AuthUserSerializer(user).data
+        return Response(data=data, status=status.HTTP_201_CREATED)
 
-#     form = AuthenticationForm()
-#     return render(request=request, template_name='users/login.html', context={'login_form':form})
+    @action(methods=['POST', ], detail=False)
+    def logout(self, request):
+        logout(request)
+        data = {'success': 'Successfully logged out'}
+        return Response(data=data, status=status.HTTP_200_OK)
 
-# class ProfileListView(generic.ListView):
-#     template_name = 'users/profile_list.html'
-#     queryset = Profile.objects.all()
-#     context_object_name = 'profiles'
+    @action(methods=['POST'], detail=False, permission_classes=[IsAuthenticated, ])
+    def password_change(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data['new_password'])
+        request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-# class ProfileDetailView(generic.DetailView):
-#     model = Profile
-#     template_name = 'users/profile_detail.html'
-#     context_object_name = 'profile'
 
-#django rest framework API view
-# @api_view(['POST',])
-# def registration_view(request):
-#     if request.method == 'POST':
-#         serializer = RegistrationSerializer(data=request.data)
-#         data = {}
-#         if serializer.is_valid():
-#             user = serializer.save()
-#             data['response'] = 'successfully registered a new user'
-#             data['username'] = user.username
-#         else:
-#             data = serializer.errors
-#         return Response(data)
-@api_view(['POST',])
-def registeration_view(request):
-    if request.method == 'POST':
-        serializer = UserSerializer(data=request.data)
-        data = {}
-        if serializer.is_valid():
-            user = serializer.save()
-            data['response'] = 'successfully registered'
-            data['username'] = user.username
-        else:
-            data = serializer.errors
-        return Response(data)
+    def get_serializer_class(self):
+        if not isinstance(self.serializer_classes, dict):
+            raise ImproperlyConfigured('serializer_classes should be a dict mapping')
+
+        if self.action in self.serializer_classes.keys():
+            return self.serializer_classes[self.action]
+        return super().get_serializer_class()

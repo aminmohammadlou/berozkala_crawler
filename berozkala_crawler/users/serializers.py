@@ -1,29 +1,57 @@
-from django.contrib.auth import get_user_model, authenticate
-from rest_framework import serializers
+from django.contrib.auth import get_user_model, password_validation
 from rest_framework.authtoken.models import Token
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers
 
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'phone_number', 'password', 'first_name', 'last_name')
 
-    confirm_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    def validate_phone_number(self, value):
+        user = User.objects.filter(phone_number=value)
+        if user:
+            raise serializers.ValidationError("phone number is used")
+        return value
+
+    def validate_password(self, value):
+        password_validation.validate_password(value)
+        return value
+
+
+class LoginSerializer(serializers.Serializer):
+    phone_number = serializers.CharField(max_length=100, required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    current_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+    def validate_current_password(self, value):
+        if not self.context['request'].user.check_password(value):
+            raise serializers.ValidationError('Current password does not match')
+        return value
+
+    def validate_new_password(self, value):
+        password_validation.validate_password(value)
+        return value
+
+
+class AuthUserSerializer(serializers.ModelSerializer):
+    auth_token = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'confirm_password')
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ('id', 'phone_number', 'first_name', 'last_name', 'is_active', 'is_staff')
+        read_only_fields = ('id', 'is_active', 'is_staff')
 
-    def save(self):
-        user = User(
-            username=self.validated_data['username']
-        )
-        password = self.validated_data['password']
-        confirm_password = self.validated_data['confirm_password']
+    def get_auth_token(self, obj):
+        token = Token.objects.create(user=obj)
+        return token.key
 
-        if password != confirm_password:
-            raise serializers.ValidationError({'password': 'Passwords must match'})
-        user.set_password(password)
-        user.save()
-        return user
+
+class EmptySerializer(serializers.Serializer):
+    pass
