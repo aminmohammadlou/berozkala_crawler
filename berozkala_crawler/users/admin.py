@@ -1,7 +1,7 @@
 from django.contrib import admin
-from .models import Profile
+from .models import CustomUser
 
-@admin.register(Profile)
+@admin.register(CustomUser)
 class ProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'phone_number', 'age', 'email')
+    list_display = ('first_name', 'last_name', 'phone_number')
     

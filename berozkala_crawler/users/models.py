@@ -1,28 +1,51 @@
-from django.core import validators
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils.translation import gettext_lazy as _
-from django.urls import reverse
 from django.core.validators import RegexValidator
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, verbose_name=_('user'), on_delete=models.CASCADE)
-    age = models.PositiveSmallIntegerField(_('age'))
+
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+    
+    def _create_user(self, phone_number, password, **kwargs):
+
+        if not phone_number:
+            raise ValueError('The given phone number must be set')
+        user = self.model(phone_number=phone_number, **kwargs)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, phone_number, password=None, **kwargs):
+        kwargs.setdefault('is_superuser', False)
+        return self._create_user(phone_number, password, **kwargs)
+
+    def create_superuser(self, phone_number, password, **kwargs):
+        kwargs.setdefault('is_superuser', True)
+
+        if kwargs.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self._create_user(phone_number, password, **kwargs)
+
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    username = None
 
     phone_number_validator = RegexValidator(r'^(\+98|0)?9\d{9}$', message=_('Invalid phone number'))
 
     phone_number = models.PositiveBigIntegerField(_('phone number'), unique=True, validators=[phone_number_validator])
-    email = models.EmailField(_('email'), blank=True, unique=True)
-    bio = models.TextField(_('bio'), blank=True)
-    avatar = models.ImageField(_('avatar'), upload_to='avatars', blank=True)
+    first_name = models.CharField(_('first name'), max_length=100, blank=True, null=False)
+    last_name = models.CharField(_('last name'), max_length=100, blank=True, null=False)
+
+    USERNAME_FIELD = 'phone_number'
+
+    objects = UserManager()
 
     class Meta:
-        db_table = 'profile'
-        verbose_name = _('Profile')
-        verbose_name_plural = _('Profiles')
+        db_table = 'user'
+        verbose_name = _('User')
+        verbose_name_plural = _('Users')
 
     def __str__(self):
-        return f'id: {self.user.id} username: {self.user.username}'
-
-    def get_absolute_url(self):
-        return reverse('users:profile_detail', kwargs={'pk': self.pk})
+        return f'phone number: {self.phone_number} - first name: {self.first_name} - last name: {self.last_name}'
