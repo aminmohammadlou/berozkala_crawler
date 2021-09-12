@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.contrib.auth import get_user_model, logout
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -40,9 +40,9 @@ class AuthViewSet(viewsets.GenericViewSet):
         data = serializers.AuthUserSerializer(user).data
         return Response(data=data, status=status.HTTP_201_CREATED)
 
-    @action(methods=['POST', ], detail=False)
+    @action(methods=['POST', ], detail=False, permission_classes=[IsAuthenticated, ])
     def logout(self, request):
-        logout(request)
+        request.user.auth_token.delete()
         data = {'success': 'Successfully logged out'}
         return Response(data=data, status=status.HTTP_200_OK)
 
