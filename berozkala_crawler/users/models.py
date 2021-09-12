@@ -5,20 +5,20 @@ from django.core.validators import RegexValidator
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, phone_number, password=None):
+    def create_user(self, phone_number, password=None, **kwargs):
         if not phone_number:
             raise ValueError(_('Users must have a phone_number'))
 
-        user = self.model(phone_number=phone_number)
+        user = self.model(phone_number=phone_number, **kwargs)
         user.set_password(password)
         user.save()
         return user
 
-    def create_superuser(self, phone_number, password=None):
+    def create_superuser(self, phone_number, password=None, **kwargs):
         if not password:
             raise TypeError(_('Password must be set'))
 
-        user = self.create_user(phone_number, password=password)
+        user = self.create_user(phone_number, password=password, **kwargs)
         user.is_superuser = True
         user.is_staff = True
         user.is_verified = True
@@ -46,8 +46,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     def __str__(self):
-        return self.phone_number
-        
+        return str(self.phone_number)
+
 
     class Meta:
         db_table = 'user'
