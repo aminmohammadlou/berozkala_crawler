@@ -45,12 +45,15 @@ class AuthUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'phone_number', 'first_name', 'last_name', 'is_active', 'is_staff')
-        read_only_fields = ('id', 'is_active', 'is_staff')
+        fields = ('id', 'phone_number', 'first_name', 'last_name', 'is_active', 'is_staff', 'auth_token')
+        read_only_fields = ('id', 'is_active', 'is_staff','auth_token')
 
     def get_auth_token(self, obj):
-        token = Token.objects.create(user=obj)
-        return token.key
+        try:
+            token = Token.objects.get(user_id=obj.id)
+        except Token.DoesNotExist:
+            token = Token.objects.create(user=obj)
+            return token
 
 
 class EmptySerializer(serializers.Serializer):
