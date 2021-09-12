@@ -53,7 +53,7 @@ class AuthUserSerializer(serializers.ModelSerializer):
             token = Token.objects.get(user_id=obj.id)
         except Token.DoesNotExist:
             token = Token.objects.create(user=obj)
-            return token
+        return token.key
 
 
 class EmptySerializer(serializers.Serializer):
