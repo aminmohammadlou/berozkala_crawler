@@ -14,14 +14,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         arg = options['arg']
         if arg == 'category':
-            categories = category_crawler()
-            for category in categories:
-                category.save()
+            category_crawler()
         elif arg == 'product':
-            categories = Category.objects.all()
+            categories = Category.objects.all().exclude(pk=1)
             for category in categories:
-                products = product_crawler(category)
-                for product in products:
-                    product.save()
+                product_crawler(category)
         else:
             raise CommandError(f'Argument "{arg}" Is Invalid')
