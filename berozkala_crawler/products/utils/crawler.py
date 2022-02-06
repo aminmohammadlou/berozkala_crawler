@@ -34,15 +34,22 @@ def product_crawler(category):
         '#mweb-site-wrap > div > div > div > div.content-wrap.content-with-sidebar.col-md-27.col-xs-36 > nav > ul > '
         'li > div > div > div.product-image-area > a > img')
 
+    urls = soup.select(
+        '#mweb-site-wrap > div > div > div > div.content-wrap.content-with-sidebar.col-md-27.col-xs-36 > nav > ul > '
+        'li > div > div > div.product-image-area > a'
+    )
+
     image_path = 'media/products'
     try:
         os.mkdir(image_path)
     except FileExistsError:
         pass
-    for name, price, image in list(zip(names, prices, images)):
+    for name, price, url, image in list(zip(names, prices, urls, images)):
         image_url = 'https://berozkala.com' + image['src']
         image_file = Image.open(requests.get(image_url, stream=True).raw)
         image_file.save('{}/{}'.format(image_path, basename(image['src'])))
 
+        product_url = 'https://berozkala.com' + url['href']
+
         Product.objects.create(name=name.text, price=int(re.sub("\\D", "", price.text)), category=category,
-                               image='{}/{}'.format(image_path.split('/')[1], basename(image['src'])))
+                               image='{}/{}'.format(image_path.split('/')[1], basename(image['src'])), url=product_url)

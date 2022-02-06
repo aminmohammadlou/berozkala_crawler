@@ -23,6 +23,7 @@ class Product(models.Model):
     name = models.CharField(verbose_name='Name', max_length=200)
     price = models.IntegerField(verbose_name='Price', help_text="In Tuman")
     image = models.ImageField(verbose_name='Image', upload_to='products', default=None, blank=True, null=True)
+    url = models.URLField(verbose_name='URL', default=None, null=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='category')
     created_time = models.DateTimeField('Created Time', auto_now_add=True)
     updated_time = models.DateTimeField('Updated Time', auto_now=True)
